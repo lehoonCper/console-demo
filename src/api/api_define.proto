@@ -1,0 +1,106 @@
+
+syntax = "proto3";
+
+package lb.quote.probe;
+option go_package = "git.5th.im/quote/quote-console/proto/monitor_pb";
+
+// ListTaskExecuteHistoryRequest 获取当前task_key的任务全部执行记录 - 请求
+message ListTaskExecuteHistoryRequest {
+    string task_key = 1; // 任务key
+  }
+  
+  // ListTaskExecuteHistoryResponse 获取当前task_key的任务全部执行记录 - 返回
+  message ListTaskExecuteHistoryResponse {
+    int32 code = 1; // http状态码
+    string message = 2;
+    repeated TaskExecuteBaseInfo base_info_list = 3; // 任务执行结果基本信息列表, 按照created_timestamp降序排列
+  }
+  
+  // GetTaskExecuteHistoryDetailRequest 获取指定任务执行历史详情 - 请求
+  message GetTaskExecuteHistoryDetailRequest {
+    string task_key = 1; // 任务key
+    string task_id = 2; // 任务执行id
+  }
+  
+  // GetTaskExecuteHistoryDetailResponse 获取指定任务执行历史详情 - 返回
+  message GetTaskExecuteHistoryDetailResponse {
+    int32 code = 1;
+    string message = 2;
+    ExecuteTaskHistory history = 5; // 任务执行历史详情
+  }
+  
+  message SimpleUserInfo {
+    string email = 1;
+    string name = 2;
+    string avatar = 3;
+  }
+  
+  // ExecuteTaskRequest 执行任务 - 请求
+  message ExecuteTaskRequest {
+    string task_id = 1;
+    string task_key = 2;
+    CommitInfo commit_info = 3;
+  }
+  
+  // TaskExecuteBaseInfo 任务执行历史基础信息
+  message TaskExecuteBaseInfo {
+    string task_id = 1; //任务执行id
+    string task_key = 2; //任务key
+    int64 created_timestamp = 11; //任务创建时间
+    int64 approved_timestamp = 12; //任务审批时间
+    int64 execute_timestamp = 13; //任务执行时间
+    int64 finished_timestamp = 14; //任务完成时间
+    string status = 15; //任务状态 可选: [creating: 创建中], [waiting_for_approval: 等待审批], [waiting_for_execute: 等待执行],[ executing: 执行中], [finished: 已完成], [failed: 失败]
+    SimpleUserInfo created_user = 21; //创建用户信息
+    SimpleUserInfo approved_user = 22; //审批用户信息
+    bool is_need_approval = 23; //是否需要审批
+    bool is_async_task = 24; //是否为异步任务
+    repeated string clusters = 25; //任务执行集群列表
+  }
+  
+  // ExecuteTaskHistory 任务执行历史完整记录
+  message ExecuteTaskHistory {
+    TaskExecuteBaseInfo base_info = 1; //任务执行历史基础信息
+    map<string ,BroadcastResult> results = 2; //各集群执行结果 key: 集群名称 value: 集群执行结果
+    string marshaled_params = 3; //任务参数
+  }
+  
+// BroadcastResult 广播结果
+message BroadcastResult {
+    string task_id = 1; //任务id
+    string cluster = 2; //集群名称
+    bool is_async = 3; //是否为异步任务
+    bool is_finished = 4; //是否已完成
+    bool is_have_error = 5; //是否有错误
+    map<string, PodBroadcastResult> pod_response = 10;  //这里的map为当前cluster下全部目标服务pod的结果，注意这个map没次返回都会带上当前集群下全部目标服务pod的结果
+  }
+  
+// 每个pod的结果
+message PodBroadcastResult {
+    int32  code = 1;            //运行结果 - http状态码
+    string message = 2;         //运行结果 - 文本
+    int64 cost_millisecond = 4; //运行耗时 耗秒
+    bool is_async_running = 5;  //是否异步任务在执行中 当为true时候，仅关注pod_info获取目标pod信息即可
+    KubernetesPodsDetailV2 pod_info = 6; //pod信息
+    int64 update_timestamp = 10; //更新时间 用于合并数据
+  }
+  
+  message KubernetesPodsDetailV2 {
+    string pod_name = 1;
+    string namespace = 2;
+    string resource_type = 3;
+    string resource_name = 4;
+    string pod_ip = 7;
+    string node_ip = 8;
+    bool ready = 10;
+  }
+
+message CommitInfo {
+    string user_name = 1;
+    string user_email = 2;
+    string timestamp = 3;
+    string path = 4;
+    string env = 5;
+    int64 commit_timestamp = 6;
+    string user_avatar = 7;
+  }

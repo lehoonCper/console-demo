@@ -1,0 +1,32 @@
+{
+    "app": {
+        "name": "Quote Console",
+        "version": "2.0.0",
+        "description": "行情控制台",
+        "author": "hao.liu@longbridge-inc.com",
+        "build-hash": ""
+    },
+    "api": {
+        "baseURL": {
+            "local": "http://localhost:8080",
+            "staging": "https://staging-api.example.com",
+            "prod": "https://api.example.com"
+        },
+        "timeout": 10000
+    },
+    "ui": {
+        "theme": "default",
+        "language": "zh-CN",
+        "pageSize": 20
+    },
+    "features": {
+        "dataManager": true,
+        "dutyView": true,
+        "auth": true
+    },
+    "icon": {
+        "local": "src/assets/icon_local.png",
+        "staging": "src/assets/icon_staging.png",
+        "prod": "src/assets/icon_prod.png"
+    }
+}

@@ -1,0 +1,47 @@
+你可以使用vue3, javascript, element-ui plus, vite  
+
+技术栈:
+  - Vue 3
+  - Vite
+  - JavaScript
+  - Element Plus
+
+开发规范:
+  - 使用 ESLint 检查代码规范
+  - 使用 Prettier 格式化代码
+  - 组件名使用 PascalCase
+  - 文件名使用 kebab-case
+
+Answer:
+  - 简体中文回答
+
+.vue文件:
+  - 使用 scoped 样式
+  - class名称仅表示结构信息,不要携带业务相关命名
+  - 一个vue的顶级class名称固定为组件名称-container
+
+目录结构:
+ - app-config.json  # 应用配置文件
+    - config/     # 配置文件
+    - router/     # 路由
+    - utils/      # 工具函数
+    - main.js     # 入口文件
+    - App.vue     # 根组件
+    - index.html  # 入口html
+    - src/
+    - assets/     # 静态资源
+    - global_components/ # 全局公共组件
+    - pages/      # 页面
+        Page1/
+            - components/   # 页面1中可复用的组件
+            - Header.vue
+            - Footer.vue
+            - Main.vue     # 页面1的主页面组件
+            - sub/         # 页面1中子页面
+            - sub1.vue
+            - sub2.vue
+        Page2/ # 页面2
+            - main.vue
+            - sub/
+            - sub1.vue
+            - sub2.vue

@@ -1,0 +1,63 @@
+{
+    "name": "quote-console",
+    "version": "2.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev:dev": "vite --mode dev",
+        "dev:staging": "vite --mode staging",
+        "dev:prod": "vite --mode prod",
+        "build:dev": "vite build --mode dev",
+        "build:staging": "vite build --mode staging",
+        "build:prod": "vite build --mode prod",
+        "preview": "vite preview",
+        "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
+        "format": "prettier --write src/"
+    },
+    "dependencies": {
+        "ali-oss": "^6.22.0",
+        "axios": "^1.7.7",
+        "core-js": "^3.8.3",
+        "crypto-js": "^4.2.0",
+        "dayjs": "^1.11.13",
+        "element-plus": "^2.8.6",
+        "vue": "^3.2.13",
+        "vue-router": "^4.0.3",
+        "vuex": "^4.0.0"
+    },
+    "devDependencies": {
+        "@vitejs/plugin-vue": "^5.0.0",
+        "vite": "^5.0.0",
+        "eslint": "^8.57.0",
+        "eslint-plugin-vue": "^9.17.0",
+        "prettier": "^3.0.0",
+        "sass": "^1.69.0",
+        "unplugin-auto-import": "^0.16.7",
+        "unplugin-vue-components": "^0.25.2"
+    },
+    "eslintConfig": {
+        "root": true,
+        "env": {
+            "node": true,
+            "es2022": true
+        },
+        "extends": [
+            "plugin:vue/vue3-essential",
+            "eslint:recommended"
+        ],
+        "parserOptions": {
+            "ecmaVersion": "latest",
+            "sourceType": "module"
+        },
+        "rules": {
+            "no-unreachable": "off",
+            "vue/multi-word-component-names": "off"
+        }
+    },
+    "browserslist": [
+        "> 1%",
+        "last 2 versions",
+        "not dead",
+        "not ie 11"
+    ]
+}

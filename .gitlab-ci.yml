@@ -1,0 +1,76 @@
+image: docker.longbridge-inc.com/long-bridge-frontend/frontend-builder:latest
+
+include:
+  - https://git.5th.im/open-source/ci-template/-/raw/master/templates/docker-login.yaml
+  - https://git.5th.im/open-source/ci-template/raw/master/templates/ecr-image-push.yml
+  - https://git.5th.im/open-source/ci-template/raw/master/templates/maersk-template.yml
+
+
+variables:
+  APP_NAME: 'quote-console-web'
+  LOCAL_REPO: 'docker.longbridge-inc.com/long-bridge-core-system'
+
+stages:
+  - build
+  - push
+  - deploy
+
+before_script:
+  - export SHORT_SHA=$(echo $CI_COMMIT_SHA | cut -c1-8)
+  - echo "start to build $SHORT_SHA"
+  - pwd
+
+build_staging:
+  extends: .docker-login
+  tags:
+    - quote-only
+ 
+  script:
+    - cp -r build/staging web
+    - cp -r config/quote-console.conf quote-console.conf
+    - cp -r config/nginx.conf nginx.conf
+    - docker build -t ${LOCAL_REPO}/${APP_NAME}:hk-${CI_COMMIT_SHA} .
+    - docker push ${LOCAL_REPO}/${APP_NAME}:hk-${CI_COMMIT_SHA} 
+
+build_prod:
+  extends: .docker-login
+  tags:
+    - quote-only
+ 
+  script:
+    - cp -r build/prod web
+    - cp -r config/quote-console.conf quote-console.conf
+    - cp -r config/nginx.conf nginx.conf
+    - docker build -t ${LOCAL_REPO}/${APP_NAME}:hk-prod${CI_COMMIT_SHA} .
+    - docker push ${LOCAL_REPO}/${APP_NAME}:hk-prod${CI_COMMIT_SHA} 
+
+deploy-staging:
+  extends: .maersk-template
+  stage: deploy
+  only:
+    - quote-console
+  variables:
+    APP: quote-console
+    CLUSTER: staging-ack-1
+    NAMESPACE: core
+    DEPLOY: quote-console
+    CONTAINER: web
+    VERSION: hk-$CI_COMMIT_SHA
+  needs:
+    - "build_staging"
+
+deploy-prod:
+  extends: .maersk-template
+  when: manual
+  stage: deploy
+  only:
+    - quote-console
+  variables:
+    APP: quote-console
+    CLUSTER: prod-hk-ack-1
+    NAMESPACE: core
+    DEPLOY: quote-console
+    CONTAINER: web
+    VERSION: hk-prod${CI_COMMIT_SHA}
+  needs:
+    - "build_prod"
