@@ -53,7 +53,8 @@ export default defineConfig(({ mode, command }) => {
         '@pages': resolve(__dirname, 'src/pages'),
         '@utils': resolve(__dirname, 'src/utils'),
         '@config': resolve(__dirname, 'src/config'),
-        '@services': resolve(__dirname, 'src/services')
+        '@services': resolve(__dirname, 'src/services'),
+        '@global_components': resolve(__dirname, 'src/global_components')
       }
     },
     
@@ -93,9 +94,9 @@ export default defineConfig(({ mode, command }) => {
     
     // 构建配置
     build: {
-      outDir: 'build',
+      outDir: `build/${mode}`,
       assetsDir: 'assets',
-      sourcemap: mode === 'local',
+      sourcemap: mode === 'dev',
       minify: 'esbuild',
       chunkSizeWarningLimit: 1000,
       
@@ -156,4 +157,4 @@ export default defineConfig(({ mode, command }) => {
     // 环境变量前缀
     envPrefix: 'VITE_APP_'
   }
-}) 
+})

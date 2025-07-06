@@ -1,155 +1,268 @@
 <template>
-    <div class="login_view">
-        <div class="auth_lv1">
-            <el-image style=""
-                      src="https://ezquote-statics.oss-cn-hangzhou.aliyuncs.com/quote-monitor-icons/v2/goten-logo-dark.png"
-                      fit="scale-down"></el-image>
-        </div>
+    <div class="auth-main-container">
+        <div class="auth-card">
+            <div class="logo-section">
+                <el-image 
+                    src="https://ezquote-statics.oss-cn-hangzhou.aliyuncs.com/quote-monitor-icons/v2/quote-console-icon.png" 
+                    style="height: 80px; width: 160px;" 
+                    fit="contain"
+                />
+                <h1 class="app-title">Quote Console</h1>
+                <p class="app-subtitle">行情控制台</p>
+            </div>
 
-        <br><br>
-        <div class="auth_login_box"
-             :hidden="hidden"
-             @click="jump_lark">
-            <el-image style="width:30px; height: 30px;"
-                      src="https://ezquote-statics.oss-cn-hangzhou.aliyuncs.com/quote-monitor-icons/feishu_3x.webp">
-            </el-image>
+            <div class="auth-section" v-loading="loading">
+                <h2 class="auth-title">选择登录方式</h2>
+                
+                <div class="auth-providers">
+                    <div 
+                        v-for="provider in availableProviders" 
+                        :key="provider.name"
+                        class="auth-provider"
+                        @click="handleLogin(provider.name)"
+                    >
+                        <div class="provider-icon">
+                            <el-image 
+                                v-if="provider.icon && provider.name !== 'dev'"
+                                :src="getProviderIcon(provider.icon)" 
+                                style="width: 24px; height: 24px;"
+                                fit="contain"
+                            />
+                            <el-icon v-else-if="provider.name === 'dev'" size="24">
+                                <User />
+                            </el-icon>
+                        </div>
+                        <span class="provider-name">{{ getProviderDisplayName(provider.name) }}</span>
+                    </div>
+                </div>
 
-            <span class="auth_login_text"
-                  @click="pre_login_redirect">飞书统一登录</span>
+                <div class="env-info">
+                    <el-tag :type="getEnvTagType()" size="small">
+                        {{ getEnvDisplayName() }} 环境
+                    </el-tag>
+                </div>
+            </div>
         </div>
     </div>
 </template>
 
 <script>
+import { User } from '@element-plus/icons-vue';
+import { ElMessage } from 'element-plus';
+import { auth } from '@/utils/oauth/auth.js';
+import larkAuth from '@/utils/oauth/lark.js';
+
 export default {
-    name: 'LoginView',
-    data () {
+    name: 'AuthMain',
+    components: {
+        User
+    },
+    data() {
         return {
-            login_success: false,
-            hidden: false,
-            
+            loading: false,
+            availableProviders: []
         }
     },
-
+    computed: {
+        currentEnv() {
+            return import.meta.env.VITE_APP_ENV || 'dev';
+        }
+    },
+    async created() {
+        this.availableProviders = auth.getAvailableProviders();
+        
+        // 检查是否有授权回调
+        await this.handleAuthCallback();
+    },
     methods: {
-        async login (code) {
-            try {
-                let response = await this.$common.post('/auth/login', {
-                    email: this.email,
-                    code: code,
-                    redirect_uri: import.meta.env.VITE_APP_AUTH_CALLBACK_ADDR
-                })
-                this.$accountInfo.set(response.data.user_info.name, response.data.user_info.nickname, response.data.user_info.email, response.data.user_info.avatar_url, response.data.user_info.mini_avatar_url);
-                this.login_success = true;
-                this.$router.push('/')
-            } catch (error) {
-                this.$message.error(error)
-                return
+        async handleAuthCallback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            
+            if (code) {
+                this.loading = true;
+                try {
+                    // 处理飞书登录回调
+                    const userInfo = await larkAuth.handleCallback(code);
+                    
+                    // 保存用户信息
+                    this.$accountInfo.set(
+                        userInfo.username,
+                        userInfo.nickname,
+                        userInfo.email,
+                        userInfo.avatarUrl,
+                        userInfo.miniAvatarUrl
+                    );
+                    
+                    ElMessage.success('登录成功');
+                    this.$router.push('/');
+                } catch (error) {
+                    console.error('登录回调处理失败:', error);
+                    ElMessage.error('登录失败，请重试');
+                } finally {
+                    this.loading = false;
+                }
             }
         },
 
-        pre_login_redirect () {
-            let addr = import.meta.env.VITE_APP_AUTH_CODE_SERVER_ADDR + "?client_id=" + import.meta.env.VITE_APP_AUTH_CLIENT_ID + "&response_type=code&redirect_uri=" + import.meta.env.VITE_APP_AUTH_CALLBACK_ADDR
-            window.location.replace(addr)
+        async handleLogin(providerName) {
+            this.loading = true;
+            
+            try {
+                await auth.login(providerName);
+                ElMessage.success('登录成功');
+                this.$router.push('/');
+            } catch (error) {
+                console.error('登录失败:', error);
+                if (error.message !== '需要在回调页面处理') {
+                    ElMessage.error('登录失败，请重试');
+                }
+            } finally {
+                this.loading = false;
+            }
         },
 
-    },
+        getProviderIcon(iconName) {
+            // 这里可以根据实际情况返回图标URL
+            return `/icons/${iconName}`;
+        },
 
-    mounted () {
-        if (import.meta.env.VITE_APP_ENV === 'local') {
-            console.log('local环境，设置当前用户: test, test@test.com', import.meta.env.VITE_APP_ENV);
-            this.$accountInfo.set('test', 'test', 'test@test.com', 'https://ezquote-statics.oss-cn-hangzhou.aliyuncs.com/quote-monitor-icons/v2/goten-logo-dark.png', 'https://ezquote-statics.oss-cn-hangzhou.aliyuncs.com/quote-monitor-icons/v2/goten-logo-dark.png');
-            this.login_success = true;
-            this.$router.push('/')
-            return;
-        }
-        
-        const queryParams = this.$common.getQueryParams();
-        const code = queryParams.code;
-        if (code == null || code == undefined) {
-            return;
-        } else {
-            this.hidden = true;
-            this.login(code);
+        getProviderDisplayName(providerName) {
+            const nameMap = {
+                lark: '飞书登录',
+                slack: 'Slack登录',
+                dev: '开发者登录'
+            };
+            return nameMap[providerName] || providerName;
+        },
+
+        getEnvTagType() {
+            const typeMap = {
+                dev: 'info',
+                staging: 'warning',
+                prod: 'danger'
+            };
+            return typeMap[this.currentEnv] || 'info';
+        },
+
+        getEnvDisplayName() {
+            const nameMap = {
+                dev: '开发',
+                staging: '测试',
+                prod: '生产'
+            };
+            return nameMap[this.currentEnv] || this.currentEnv;
         }
     }
 }
-
 </script>
 
 <style scoped>
-.login_view {
-    height: 100%;
-    background-image: linear-gradient(
-        to right,
-        #ffffff 0%,
-        #ffffff 50%,
-        #80e8ebc8 85%,
-        #04befe 100%
-    );
+.auth-main-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.logo-section {
+    margin-bottom: 40px;
+}
+
+.app-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 16px 0 8px 0;
+}
+
+.app-subtitle {
+    font-size: 16px;
+    color: #7f8c8d;
+    margin: 0;
+}
+
+.auth-section {
+    margin-bottom: 20px;
+}
+
+.auth-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 24px;
+}
+
+.auth-providers {
     display: flex;
     flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.auth-provider {
+    display: flex;
     align-items: center;
-}
-
-.auth_title {
-    width: 800px;
-    height: 30px;
-    margin: auto;
-}
-
-.auth_lv1 {
-    width: 600px;
-    height: 160px;
-    margin: auto;
-    margin-top: 50px;
-    box-shadow: 1px 1px 20px 5px rgba(211, 211, 211, 0.9);
-}
-
-.auth_login_box {
-    width: 140px;
-    height: 30px;
-    margin: auto;
-    border: 1px solid rgb(193, 193, 193);
-    text-align: left;
-    padding-left: 10px;
-    background-color: #fffffc;
-    border-radius: 20px;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border: 2px solid #e1e8ed;
+    border-radius: 12px;
     cursor: pointer;
-    transition: 0.2s;
+    transition: all 0.3s ease;
+    background: #fff;
 }
 
-.auth_login_box:hover {
-    width: 140px;
-    height: 30px;
-    margin: auto;
-    border: 1px solid rgb(127, 127, 127);
-    text-align: left;
-    padding-left: 10px;
-    background-color: #f1f1ef;
-    border-radius: 20px;
-    transition: 0.2s;
+.auth-provider:hover {
+    border-color: #409eff;
+    background: #f0f7ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(64, 158, 255, 0.15);
 }
 
-.auth_login_text {
-    height: 30px;
-    margin: auto;
-    float: right;
-    line-height: 30px;
-    font-size: 14px;
-    margin-right: 10px;
+.provider-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.icon-enter-active,
-.icon-leave-active {
-    transition: opacity 0.5s;
+.provider-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: #2c3e50;
 }
 
-.icon-enter,
-.icon-leave-to
+.env-info {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
 
-/* .fade-leave-active below version 2.1.8 */ {
-    opacity: 0;
-    height: 0px;
+/* 响应式设计 */
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 30px 20px;
+        margin: 10px;
+    }
+    
+    .app-title {
+        font-size: 24px;
+    }
+    
+    .auth-title {
+        font-size: 18px;
+    }
 }
 </style>

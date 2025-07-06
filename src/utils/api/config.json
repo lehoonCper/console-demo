@@ -1,0 +1,30 @@
+{
+    "endpoints": {
+        "getRepairTaskConfigs": "/data-manager/get-repair-task-configs",
+        "registerRepairTask": "/data-manager/register-repair-task",
+        "createRepairTask": "/data-manager/create-repair-task",
+        "updateRepairTask": "/data-manager/update-repair-task",
+        "executeRepairTask": "/data-manager/execute-task",
+        "retryRepairTask": "/data-manager/retry-task",
+        "listRepairTaskHistory": "/data-manager/list-repair-task-history",
+        "getRepairTaskHistoryDetail": "/data-manager/get-repair-task-history-detail"
+    },
+    "proto": {
+        "listRepairTaskHistory": {
+            "request": "ListTaskExecuteHistoryRequest",
+            "response": "ListTaskExecuteHistoryResponse"
+        },
+        "getRepairTaskHistoryDetail": {
+            "request": "GetTaskExecuteHistoryDetailRequest",
+            "response": "GetTaskExecuteHistoryDetailResponse"
+        },
+        "executeRepairTask": {
+            "request": "ExecuteTaskRequest",
+            "response": "ExecuteTaskResponse"
+        },
+        "retryRepairTask": {
+            "request": "RetryTaskRequest",
+            "response": "RetryTaskResponse"
+        }
+    }
+}
