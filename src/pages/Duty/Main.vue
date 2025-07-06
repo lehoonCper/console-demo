@@ -17,7 +17,7 @@
 
 
 <script>
-import CommonHeader from '@/components/CommonHeader.vue';
+import CommonHeader from '@/global_components/CommonHeader.vue';
 export default {
     name: 'DutyView',
     components: {

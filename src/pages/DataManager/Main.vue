@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import CommonHeader from '@/components/CommonHeader.vue'
+import CommonHeader from '@/global_components/CommonHeader.vue'
 import apiService from '@/services/api.service'
 import AddTask from './components/AddTask.vue'
 import LeftMenu from './components/LeftMenu.vue'
