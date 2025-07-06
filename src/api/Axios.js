@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-    baseURL: import.meta.env.QUOTE_CONSOLE_API_URL, // 替换为你的 API 基础 URL
+    baseURL: '/', // Use relative base URL to work with Vite proxy
     timeout: 10000,
     maxRedirects: 0,
     // 跨域相关配置

@@ -60,7 +60,7 @@ export const common = {
      */
     post (url, data) {
         return axiosInstance.request({
-            url: import.meta.env.VITE_APP_SERVER_API_URL + url,
+            url: url, // Use relative URL to work with Vite proxy
             method: 'POST',
             headers: {
                 'Trigger-By': accountInfo.get().email,
@@ -77,7 +77,7 @@ export const common = {
      */
     get (url) {
         return axiosInstance.request({
-            url: import.meta.env.VITE_APP_SERVER_API_URL + url,
+            url: url, // Use relative URL to work with Vite proxy
             method: 'GET'
         })
     },

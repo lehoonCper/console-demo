@@ -32,7 +32,7 @@ export default {
     async mounted() {
         console.log('import.meta.env.VITE_APP_ENV', import.meta.env.VITE_APP_ENV);
         try {
-            const response = await this.$common.get("/background_image");
+            const response = await this.$common.get("/api/background_image");
             this.background_image_url = response.data.url
             this.background_image_copyright = response.data.copy_right
             this.background_image_describe = response.data.title
